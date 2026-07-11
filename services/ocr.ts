@@ -1,0 +1,1 @@
+import { demoMarks } from '@/data/demo';import { SubjectMark } from '@/types/models';export interface OCRProvider{extract(file:File):Promise<SubjectMark[]>}export class MockOCRProvider implements OCRProvider{async extract(file:File){void file;await new Promise(r=>setTimeout(r,900));return demoMarks}}export const ocrProvider=new MockOCRProvider();

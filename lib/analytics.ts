@@ -1,0 +1,3 @@
+import { SubjectMark,PerformanceInsight } from '@/types/models';import { pct } from './utils';
+export function calculateOverallScore(marks:SubjectMark[]):number{const t=marks.reduce((a,m)=>a+m.obtained,0);const max=marks.reduce((a,m)=>a+m.maximum,0);return pct(t,max)}
+export function analyzePerformance(marks:SubjectMark[]):PerformanceInsight{const sorted=[...marks].sort((a,b)=>pct(b.obtained,b.maximum)-pct(a.obtained,a.maximum));const overall=calculateOverallScore(marks);return{overall,strongest:sorted.slice(0,2).map(m=>m.subject),improvement:sorted.slice(-2).map(m=>m.subject),summary:`You are at ${overall}%. Keep building strengths in ${sorted[0]?.subject??'your best subject'} while giving gentle extra practice to ${sorted.at(-1)?.subject??'priority areas'}.`}}

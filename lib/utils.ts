@@ -1,0 +1,1 @@
+export const uid=()=>Math.random().toString(36).slice(2,10);export const pct=(obtained:number,max:number)=>max?Math.round((obtained/max)*100):0;export function cn(...v:(string|false|undefined)[]){return v.filter(Boolean).join(' ')}

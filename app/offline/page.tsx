@@ -1,0 +1,1 @@
+export default function Offline(){return <main className="p-8"><h1 className="text-3xl font-bold">Mentora AI offline</h1><p>Basic demo screens are available once the app is loaded. Please reconnect for full features.</p></main>}
