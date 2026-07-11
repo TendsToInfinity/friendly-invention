@@ -20,8 +20,63 @@ body {
   @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
 }
 
+/* --- playful motion (all disabled under prefers-reduced-motion) --- */
+
 .animate-in {
   animation: fade 0.35s ease both;
+}
+
+.animate-float {
+  animation: float 3.5s ease-in-out infinite;
+}
+
+.animate-pop {
+  animation: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.card-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 50px rgba(38, 68, 120, 0.18);
+}
+
+.icon-bubble {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.card-lift:hover .icon-bubble {
+  transform: rotate(-8deg) scale(1.15);
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #2563eb, #7c3aed 55%, #14b8a6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.typing-dot {
+  animation: bounce-dot 1.2s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -12px;
+  width: 10px;
+  height: 14px;
+  border-radius: 2px;
+  animation: confetti-fall 2.6s ease-in forwards;
 }
 
 @keyframes fade {
@@ -31,6 +86,68 @@ body {
   }
   to {
     opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce-dot {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(320px) rotate(540deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-in,
+  .animate-float,
+  .animate-pop,
+  .typing-dot,
+  .confetti-piece {
+    animation: none;
+  }
+
+  .card-lift,
+  .icon-bubble {
+    transition: none;
+  }
+
+  .card-lift:hover {
     transform: none;
   }
 }

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { BookOpen, Sparkles, TrendingUp } from 'lucide-react';
+import { AuthStatus } from '@/components/auth-status';
 import { cn } from '@/lib/utils';
 
 type ButtonVariant = 'primary' | 'ghost';
@@ -10,10 +11,10 @@ type ButtonLinkProps = React.ComponentProps<typeof Link> & { variant?: ButtonVar
 
 function buttonClasses(variant: ButtonVariant, className?: string) {
   return cn(
-    'focus-ring rounded-xl px-4 py-2 font-semibold transition disabled:opacity-50',
+    'focus-ring rounded-xl px-4 py-2 font-semibold transition hover:scale-[1.03] active:scale-95 disabled:opacity-50 disabled:hover:scale-100',
     variant === 'ghost'
       ? 'bg-white text-slate-700 hover:bg-slate-50'
-      : 'bg-blue-600 text-white shadow-soft hover:bg-blue-700',
+      : 'bg-gradient-to-r from-blue-600 to-violet text-white shadow-soft hover:from-blue-700 hover:to-violet',
     className,
   );
 }
@@ -40,7 +41,12 @@ export function ButtonLink({ className, variant = 'primary', ...props }: ButtonL
 }
 
 export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div {...props} className={cn('rounded-2xl border border-blue-100 bg-white p-5 shadow-soft', className)} />;
+  return (
+    <div
+      {...props}
+      className={cn('card-lift rounded-2xl border border-blue-100 bg-white p-5 shadow-soft', className)}
+    />
+  );
 }
 
 const NAV_LINKS = [
@@ -59,14 +65,18 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <nav className="sticky top-0 z-20 border-b bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
           <Logo />
-          <div className="hidden gap-4 text-sm md:flex">
+          <div className="hidden items-center gap-4 text-sm md:flex">
             {NAV_LINKS.map(([href, label]) => (
               <Link key={href} href={href}>{label}</Link>
             ))}
+            <AuthStatus />
           </div>
-          <Link href="/dashboard" className="md:hidden" aria-label="Open dashboard">
-            <TrendingUp />
-          </Link>
+          <div className="flex items-center gap-3 md:hidden">
+            <AuthStatus />
+            <Link href="/dashboard" aria-label="Open dashboard">
+              <TrendingUp />
+            </Link>
+          </div>
         </div>
       </nav>
       {children}

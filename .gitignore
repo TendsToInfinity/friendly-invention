@@ -6,3 +6,5 @@ tsconfig.tsbuildinfo
 test-results
 playwright-report
 .DS_Store
+lib/generated
+.env

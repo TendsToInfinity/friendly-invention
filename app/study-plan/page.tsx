@@ -37,12 +37,36 @@ export default function StudyPlan() {
             <h1 className="text-3xl font-bold">Personalized Study Plan</h1>
             <Button onClick={regenerate}>Regenerate plan</Button>
           </div>
-          <p className="my-3">Progress {progress}% based on weak subjects, available hours, exams, and goals.</p>
-          {!plan && <p>No plan yet. Generate one to begin.</p>}
+          <p className="my-3">
+            Progress <b className="text-blue-700">{progress}%</b>
+            {progress === 100 ? ' — amazing, you finished the week! 🏆' : progress >= 50 ? ' — over halfway there! 🔥' : ' based on weak subjects, available hours, exams, and goals.'}
+          </p>
+          <div className="mb-4 h-3 rounded-full bg-blue-100">
+            <div
+              className="h-3 rounded-full bg-gradient-to-r from-blue-600 via-violet to-teal transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          {!plan && <p>No plan yet. Generate one to begin. 🚀</p>}
           {plan?.tasks.map((task) => (
-            <label key={task.id} className="my-2 flex items-center gap-3 rounded-xl bg-slate-50 p-3">
-              <input type="checkbox" checked={task.completed} onChange={() => toggleTask(task.id)} />
-              <span className="flex-1"><b>{task.day}: {task.title}</b><br /><small>{task.subject} • {task.durationMinutes} min • {task.priority} priority</small></span>
+            <label
+              key={task.id}
+              className={`my-2 flex cursor-pointer items-center gap-3 rounded-xl p-3 transition ${
+                task.completed ? 'bg-emerald-50 opacity-75' : 'bg-slate-50 hover:bg-blue-50'
+              }`}
+            >
+              <input
+                type="checkbox"
+                className="h-5 w-5 accent-teal"
+                checked={task.completed}
+                onChange={() => toggleTask(task.id)}
+              />
+              <span className={`flex-1 ${task.completed ? 'line-through' : ''}`}>
+                <b>{task.day}: {task.title}</b>
+                <br />
+                <small>{task.subject} • {task.durationMinutes} min • {task.priority} priority</small>
+              </span>
+              {task.completed && <span aria-hidden="true">✅</span>}
             </label>
           ))}
         </Card>
