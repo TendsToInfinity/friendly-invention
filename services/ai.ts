@@ -1,52 +1,64 @@
+import { adaptiveReply, type MentorContext } from '@/lib/mentor-knowledge';
+import { getMode, repo } from '@/services/storage';
 import type { ChatMessage } from '@/types/models';
 
 /**
- * Mentor-response provider abstraction. The UI depends only on this
- * interface, so the mock can be swapped for a real provider later.
+ * Client-side mentor provider.
  *
- * NOTE: a real OpenAI provider must live behind a server-side API route.
- * Never reference API keys from code that ships in the client bundle.
+ * Signed-in users are answered by POST /api/mentor — a real LLM when the
+ * server has a key, otherwise the server-side adaptive engine with the
+ * student's database context. Demo users (and any server failure) fall back
+ * to the same adaptive engine running locally against cached data, so the
+ * mentor always answers. No API keys ever exist in this bundle.
  */
 export interface AIMentorProvider {
   reply(messages: ChatMessage[], subject: string): Promise<string>;
 }
 
-const CANNED_REPLIES: Array<{ match: RegExp; reply: string }> = [
-  {
-    match: /photosynthesis/,
-    reply:
-      '**Photosynthesis** is how plants make food using sunlight, water, and carbon dioxide. Try remembering: light + CO₂ + water → glucose + oxygen.',
-  },
-  {
-    match: /marks|falling/,
-    reply:
-      'Marks can dip for many reasons—concept gaps, exam strategy, or practice style. Let’s review errors kindly, revise basics, and solve 5 targeted questions daily.',
-  },
-  {
-    match: /career/,
-    reply:
-      'Careers using mathematics include engineering, data science, finance, architecture, research, and economics. Treat this as exploration—discuss with parents, teachers, and counselors.',
-  },
-  {
-    match: /quiz/,
-    reply: 'Quick quiz: If x/3 = 6, what is x? Answer first, then I’ll explain.',
-  },
-];
+const THINKING_DELAY_MS = 450;
 
-const REPLY_DELAY_MS = 550;
+function localContext(): MentorContext {
+  const student = repo.student();
+  const report = repo.report();
+  return {
+    studentName: student?.name,
+    weakSubjects: student?.academic.improvementSubjects ?? [],
+    strongSubjects: student?.academic.strongSubjects ?? [],
+    marks: report.marks,
+    attemptCount: repo.attempts().length,
+  };
+}
 
-/** Deterministic, offline mentor used by the MVP. */
-export class MockAIProvider implements AIMentorProvider {
+/** Offline/demo mentor: the adaptive engine over locally cached student data. */
+export class AdaptiveMockProvider implements AIMentorProvider {
   async reply(messages: ChatMessage[], subject: string): Promise<string> {
-    const text = messages.at(-1)?.content.toLowerCase() ?? '';
-    await new Promise((resolve) => setTimeout(resolve, REPLY_DELAY_MS));
+    await new Promise((resolve) => setTimeout(resolve, THINKING_DELAY_MS));
+    return adaptiveReply(messages, subject, localContext());
+  }
+}
 
-    const canned = CANNED_REPLIES.find(({ match }) => match.test(text));
-    if (canned) return canned.reply;
+class ServerFirstProvider implements AIMentorProvider {
+  private fallback = new AdaptiveMockProvider();
 
-    return `For ${subject}, start with one clear goal, revise the concept, practice examples, and reflect on mistakes. What topic should we break down next?`;
+  async reply(messages: ChatMessage[], subject: string): Promise<string> {
+    if (getMode() === 'cloud') {
+      try {
+        const response = await fetch('/api/mentor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subject, messages: messages.slice(-20) }),
+        });
+        if (response.ok) {
+          const body = (await response.json()) as { reply: string };
+          return body.reply;
+        }
+      } catch {
+        // Network hiccup — the local engine takes over below.
+      }
+    }
+    return this.fallback.reply(messages, subject);
   }
 }
 
 /** Single shared provider instance used across the app. */
-export const aiProvider: AIMentorProvider = new MockAIProvider();
+export const aiProvider: AIMentorProvider = new ServerFirstProvider();

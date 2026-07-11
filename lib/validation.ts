@@ -73,6 +73,11 @@ export const studyPlanSchema = z.object({
   tasks: z.array(studyTaskSchema).max(100),
 });
 
+export const mentorRequestSchema = z.object({
+  subject: z.string().trim().min(1).max(60),
+  messages: z.array(chatMessageSchema).min(1).max(50),
+});
+
 export const mockTestAttemptSchema = z.object({
   id: z.string().min(1).max(64),
   testId: z.string().min(1).max(64),
