@@ -25,7 +25,9 @@ export default function StudyPlan() {
     setPlan(nextPlan);
   }
 
-  const progress = plan ? Math.round((plan.tasks.filter((task) => task.completed).length / plan.tasks.length) * 100) : 0;
+  const progress = plan?.tasks.length
+    ? Math.round((plan.tasks.filter((task) => task.completed).length / plan.tasks.length) * 100)
+    : 0;
 
   return (
     <Shell>

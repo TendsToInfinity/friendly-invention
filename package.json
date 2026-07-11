@@ -10,14 +10,15 @@
   },
   "dependencies": {
     "@hookform/resolvers": "latest",
+    "dompurify": "^3.4.12",
     "lucide-react": "latest",
+    "marked": "latest",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
     "react-hook-form": "latest",
     "recharts": "latest",
-    "zod": "latest",
-    "marked": "latest"
+    "zod": "latest"
   },
   "devDependencies": {
     "@playwright/test": "latest",

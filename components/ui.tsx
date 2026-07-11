@@ -2,7 +2,21 @@ import Link from 'next/link';
 import { BookOpen, Sparkles, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'ghost' };
+type ButtonVariant = 'primary' | 'ghost';
+
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant };
+
+type ButtonLinkProps = React.ComponentProps<typeof Link> & { variant?: ButtonVariant };
+
+function buttonClasses(variant: ButtonVariant, className?: string) {
+  return cn(
+    'focus-ring rounded-xl px-4 py-2 font-semibold transition disabled:opacity-50',
+    variant === 'ghost'
+      ? 'bg-white text-slate-700 hover:bg-slate-50'
+      : 'bg-blue-600 text-white shadow-soft hover:bg-blue-700',
+    className,
+  );
+}
 
 export function Logo() {
   return (
@@ -17,21 +31,27 @@ export function Logo() {
 }
 
 export function Button({ className, variant = 'primary', ...props }: ButtonProps) {
-  return (
-    <button
-      {...props}
-      className={cn(
-        'focus-ring rounded-xl px-4 py-2 font-semibold transition disabled:opacity-50',
-        variant === 'ghost' ? 'bg-white text-slate-700 hover:bg-slate-50' : 'bg-blue-600 text-white shadow-soft hover:bg-blue-700',
-        className,
-      )}
-    />
-  );
+  return <button {...props} className={buttonClasses(variant, className)} />;
+}
+
+/** Navigation styled as a button — avoids nesting a <button> inside an <a>. */
+export function ButtonLink({ className, variant = 'primary', ...props }: ButtonLinkProps) {
+  return <Link {...props} className={cn('inline-block', buttonClasses(variant, className as string))} />;
 }
 
 export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return <div {...props} className={cn('rounded-2xl border border-blue-100 bg-white p-5 shadow-soft', className)} />;
 }
+
+const NAV_LINKS = [
+  ['/dashboard', 'Dashboard'],
+  ['/report-card', 'Report Card'],
+  ['/mentor', 'AI Mentor'],
+  ['/mock-test', 'Mock Test'],
+  ['/study-plan', 'Study Plan'],
+  ['/career', 'Career'],
+  ['/profile', 'Profile'],
+] as const;
 
 export function Shell({ children }: { children: React.ReactNode }) {
   return (
@@ -40,13 +60,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
           <Logo />
           <div className="hidden gap-4 text-sm md:flex">
-            <Link href="/dashboard">Dashboard</Link>
-            <Link href="/report-card">Report Card</Link>
-            <Link href="/mentor">AI Mentor</Link>
-            <Link href="/mock-test">Mock Test</Link>
-            <Link href="/study-plan">Study Plan</Link>
-            <Link href="/career">Career</Link>
-            <Link href="/profile">Profile</Link>
+            {NAV_LINKS.map(([href, label]) => (
+              <Link key={href} href={href}>{label}</Link>
+            ))}
           </div>
           <Link href="/dashboard" className="md:hidden" aria-label="Open dashboard">
             <TrendingUp />
