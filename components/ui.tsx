@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { BookOpen, Sparkles, TrendingUp } from 'lucide-react';
+import { AuthStatus } from '@/components/auth-status';
 import { cn } from '@/lib/utils';
 
 type ButtonVariant = 'primary' | 'ghost';
@@ -59,14 +60,18 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <nav className="sticky top-0 z-20 border-b bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
           <Logo />
-          <div className="hidden gap-4 text-sm md:flex">
+          <div className="hidden items-center gap-4 text-sm md:flex">
             {NAV_LINKS.map(([href, label]) => (
               <Link key={href} href={href}>{label}</Link>
             ))}
+            <AuthStatus />
           </div>
-          <Link href="/dashboard" className="md:hidden" aria-label="Open dashboard">
-            <TrendingUp />
-          </Link>
+          <div className="flex items-center gap-3 md:hidden">
+            <AuthStatus />
+            <Link href="/dashboard" aria-label="Open dashboard">
+              <TrendingUp />
+            </Link>
+          </div>
         </div>
       </nav>
       {children}

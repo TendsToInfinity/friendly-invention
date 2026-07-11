@@ -26,6 +26,7 @@ export default function Landing() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-4">
         <Logo />
         <div className="flex gap-2">
+          <ButtonLink href="/sign-in" variant="ghost">Sign In</ButtonLink>
           <ButtonLink href="/onboarding" variant="ghost">Onboard</ButtonLink>
           <Button onClick={loadDemo}>Load Demo Account</Button>
         </div>

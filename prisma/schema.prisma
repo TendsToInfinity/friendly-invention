@@ -1,0 +1,137 @@
+// Mentora AI — Phase 1 backend schema.
+// PostgreSQL via Prisma. Arrays use native Postgres text[].
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  profile StudentProfile?
+
+  @@map("users")
+}
+
+model StudentProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name                String
+  age                 Int
+  classGrade          String
+  board               String
+  country             String
+  subjects            String[]
+  strongSubjects      String[]
+  improvementSubjects String[]
+  interests           String[]
+  careerInterests     String[]
+  goal                String
+  weeklyStudyHours    Int
+  notifications       Boolean @default(true)
+  theme               String  @default("system")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reportCards  ReportCard[]
+  studyPlans   StudyPlan[]
+  chatMessages ChatMessage[]
+  testAttempts MockTestAttempt[]
+
+  @@map("student_profiles")
+}
+
+model ReportCard {
+  id        String   @id @default(cuid())
+  studentId String
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  marks SubjectMark[]
+
+  @@index([studentId, createdAt(sort: Desc)])
+  @@map("report_cards")
+}
+
+model SubjectMark {
+  id           String @id @default(cuid())
+  reportCardId String
+  reportCard   ReportCard @relation(fields: [reportCardId], references: [id], onDelete: Cascade)
+
+  subject  String
+  obtained Float
+  maximum  Float
+
+  @@index([reportCardId])
+  @@map("subject_marks")
+}
+
+model StudyPlan {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  generatedAt DateTime @default(now())
+
+  tasks StudyTask[]
+
+  @@index([studentId, generatedAt(sort: Desc)])
+  @@map("study_plans")
+}
+
+model StudyTask {
+  id          String @id @default(cuid())
+  studyPlanId String
+  studyPlan   StudyPlan @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
+
+  day             String
+  title           String
+  subject         String
+  durationMinutes Int
+  priority        String
+  completed       Boolean @default(false)
+  sortOrder       Int     @default(0)
+
+  @@index([studyPlanId])
+  @@map("study_tasks")
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  studentId String
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  role      String
+  content   String
+  subject   String?
+  createdAt DateTime @default(now())
+  sortOrder Int      @default(0)
+
+  @@index([studentId, createdAt])
+  @@map("chat_messages")
+}
+
+model MockTestAttempt {
+  id        String   @id @default(cuid())
+  studentId String
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  testId    String
+  answers   Json
+  score     Int
+  createdAt DateTime @default(now())
+
+  @@index([studentId, createdAt(sort: Desc)])
+  @@map("mock_test_attempts")
+}
