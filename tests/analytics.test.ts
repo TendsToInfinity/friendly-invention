@@ -1,0 +1,3 @@
+import { describe,expect,it } from 'vitest';import { calculateOverallScore } from '@/lib/analytics';import { recommendCareers } from '@/services/career';import { demoMarks,demoStudent } from '@/data/demo';
+describe('score calculation',()=>{it('calculates weighted overall percentage',()=>{expect(calculateOverallScore([{subject:'A',obtained:40,maximum:50},{subject:'B',obtained:45,maximum:50}])).toBe(85)})});
+describe('career match',()=>{it('ranks career clusters with bounded exploratory scores',()=>{const recs=recommendCareers(demoStudent,demoMarks);expect(recs.length).toBeGreaterThan(3);expect(recs[0].matchScore).toBeLessThanOrEqual(98);expect(recs[0].why).toContain('may fit')})});
