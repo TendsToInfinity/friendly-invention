@@ -1,9 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BarChart, Brain, CheckCircle2, Compass, MessageCircle, Upload } from 'lucide-react';
-import { Button, Card, Logo, SafetyNote } from '@/components/ui';
+import { Button, ButtonLink, Card, Logo, SafetyNote } from '@/components/ui';
 import { repo } from '@/services/storage';
 
 const features = [
@@ -27,7 +26,7 @@ export default function Landing() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-4">
         <Logo />
         <div className="flex gap-2">
-          <Link href="/onboarding"><Button variant="ghost">Onboard</Button></Link>
+          <ButtonLink href="/onboarding" variant="ghost">Onboard</ButtonLink>
           <Button onClick={loadDemo}>Load Demo Account</Button>
         </div>
       </nav>
@@ -37,7 +36,7 @@ export default function Landing() {
           <h1 className="text-5xl font-bold tracking-tight text-slate-950">Your Personal AI Student Mentor</h1>
           <p className="text-lg text-slate-600">Mentora AI helps students understand performance, practice with mock tests, plan weekly study, chat with a mentor, and explore careers responsibly.</p>
           <div className="flex flex-wrap gap-3">
-            <Link href="/onboarding"><Button>Start Your Journey</Button></Link>
+            <ButtonLink href="/onboarding">Start Your Journey</ButtonLink>
             <Button onClick={loadDemo} variant="ghost">Try Aarav’s demo</Button>
           </div>
           <SafetyNote />

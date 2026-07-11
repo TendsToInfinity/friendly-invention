@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { PageLoading } from '@/components/loading';
 import { Card, SafetyNote, Shell } from '@/components/ui';
 import { useStudent } from '@/hooks/useDemoData';
@@ -8,8 +9,13 @@ import { repo } from '@/services/storage';
 
 export default function Career() {
   const { hydrated, student } = useStudent();
+
+  const recommendations = useMemo(
+    () => (hydrated && student ? recommendCareers(student, repo.report().marks) : []),
+    [hydrated, student],
+  );
+
   if (!hydrated) return <PageLoading label="Preparing career explorer…" />;
-  const recommendations = student ? recommendCareers(student, repo.report().marks) : [];
 
   return (
     <Shell>
