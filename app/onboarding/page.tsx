@@ -6,7 +6,8 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Card, Shell } from '@/components/ui';
-import { repo } from '@/services/storage';
+import { enterDemoMode, getMode, repo } from '@/services/storage';
+import { ensureSynced } from '@/services/sync';
 import type { Student } from '@/types/models';
 
 const schema = z.object({
@@ -43,7 +44,7 @@ export default function Onboarding() {
     defaultValues: { country: 'India', board: 'CBSE', classGrade: '10', hours: 14 },
   });
 
-  function save(values: FormOutput) {
+  async function save(values: FormOutput) {
     const student: Student = {
       id: 'local',
       name: values.name,
@@ -63,6 +64,12 @@ export default function Onboarding() {
       notifications: true,
       theme: 'system',
     };
+    // Settle whether this is a signed-in (cloud) or signed-out visitor.
+    await ensureSynced();
+    // Signed-out visitors create a local profile: enter local mode so the
+    // protected app (dashboard, mentor, etc.) is reachable without sign-up.
+    // Signed-in users stay in cloud mode and their save write-throughs to the API.
+    if (getMode() !== 'cloud') enterDemoMode();
     repo.saveStudent(student);
     router.push('/dashboard');
   }

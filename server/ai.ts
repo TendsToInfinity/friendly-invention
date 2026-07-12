@@ -11,7 +11,10 @@ import type { ChatMessage } from '@/types/models';
  */
 
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
-const LLM_TIMEOUT_MS = 20_000;
+// Keep this tight: on timeout we fall back to the adaptive engine, so a slow
+// or unreachable LLM must not make the student wait. Better a fast local
+// answer than a long hang.
+const LLM_TIMEOUT_MS = 10_000;
 const MAX_HISTORY = 12;
 
 function safetySystemPrompt(context: MentorContext, subject: string): string {

@@ -2,8 +2,13 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 /**
  * Route-protection proxy (Next 16 convention): a fast cookie-presence check that redirects
- * signed-out visitors to /sign-in. The demo cookie (set by "Load Demo
- * Account") bypasses it so the localStorage demo keeps working.
+ * visitors with no session to /sign-in. The demo/local cookie (set by "Load
+ * Demo Account" AND by completing onboarding) bypasses it, so local-only
+ * users keep full access without signing up.
+ *
+ * IMPORTANT: /onboarding is intentionally NOT protected — it is a public
+ * entry point where new visitors create their first profile. Protecting it
+ * would trap new users in a sign-in redirect loop before they can start.
  *
  * This is UX-level protection only — cookie presence is not verified here.
  * Real authorization happens in every API route via auth(), which validates
@@ -33,6 +38,5 @@ export const config = {
     '/study-plan/:path*',
     '/career/:path*',
     '/profile/:path*',
-    '/onboarding/:path*',
   ],
 };
