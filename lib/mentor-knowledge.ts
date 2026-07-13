@@ -216,6 +216,7 @@ export function adaptiveReply(
   messages: ChatMessage[],
   subject: string,
   context: MentorContext,
+  curriculumText?: string,
 ): string {
   const lastStudent = [...messages].reverse().find((message) => message.role === 'student');
   const text = (lastStudent?.content ?? '').toLowerCase();
@@ -282,7 +283,13 @@ export function adaptiveReply(
     return `Careers are exciting to explore! ${strong ? `You're strong in **${strong}** — that opens doors in many directions. ` : ''}Check the **Career** page for clusters matched to your marks and interests.\n\nRemember: these are ideas for exploration, not final answers — talk them through with parents, teachers, or a counselor. 🧭`;
   }
 
-  // 7. Default: a structured, personalized study nudge.
+  // 7. Curriculum grounding: if the curated KB had no match but the RAG layer
+  // retrieved a relevant syllabus passage, teach from that.
+  if (curriculumText) {
+    return `${curriculumText}\n\n✨ Want me to quiz you on this, or break it down further? Just ask!`;
+  }
+
+  // 8. Default: a structured, personalized study nudge.
   const focus = context.weakSubjects[0] ?? subject;
   return `Great question! Here's how I'd tackle **${subject}** today:\n\n1. **Pick one small topic** — narrow beats broad\n2. **Learn it actively** — explain it out loud in your own words\n3. **Test yourself** — say "quiz me" and I'll fire a question\n4. **Log mistakes kindly** — they're data, not failures\n\n${focus !== subject ? `💡 Tip: your focus list says **${focus}** could use some love — want to switch to that?` : 'What topic should we break down together?'}`;
 }

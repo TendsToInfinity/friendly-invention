@@ -1,5 +1,6 @@
 import { adaptiveReply, stripMarkers, type MentorContext } from '@/lib/mentor-knowledge';
 import { getLatestReportCard, getStudentProfile, listAttempts } from '@/server/repository';
+import { formatContext, formatStudentAnswer, retrievePassages } from '@/server/retrieval';
 import type { ChatMessage } from '@/types/models';
 
 /**
@@ -8,6 +9,11 @@ import type { ChatMessage } from '@/types/models';
  * student's own context (profile + marks) so answers are personalized.
  * Without a key — or on any LLM failure — the adaptive engine answers, so
  * the mentor never goes silent. The key never leaves the server.
+ *
+ * Answers are grounded in the curriculum knowledge index (RAG): the most
+ * relevant passages from data/knowledge-index.json are retrieved for the
+ * question and injected into the prompt, so the mentor teaches from YOUR
+ * syllabus. See server/retrieval.ts and ml/build_index.py.
  */
 
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
@@ -17,7 +23,7 @@ const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const LLM_TIMEOUT_MS = 10_000;
 const MAX_HISTORY = 12;
 
-function safetySystemPrompt(context: MentorContext, subject: string): string {
+function safetySystemPrompt(context: MentorContext, subject: string, curriculum: string): string {
   const marksSummary = context.marks.length
     ? context.marks.map((mark) => `${mark.subject}: ${mark.obtained}/${mark.maximum}`).join(', ')
     : 'no marks saved yet';
@@ -32,6 +38,7 @@ function safetySystemPrompt(context: MentorContext, subject: string): string {
     `Current chat subject: ${subject}.`,
     `Student context — name: ${context.studentName ?? 'unknown'}; strong subjects: ${context.strongSubjects.join(', ') || 'unknown'}; focus subjects: ${context.weakSubjects.join(', ') || 'unknown'}; latest marks: ${marksSummary}; mock tests taken: ${context.attemptCount}.`,
     'Use the context to personalize answers (reference their focus subjects when relevant).',
+    curriculum ? `\n${curriculum}` : '',
   ].join('\n');
 }
 
@@ -39,6 +46,7 @@ async function llmReply(
   messages: ChatMessage[],
   subject: string,
   context: MentorContext,
+  curriculum: string,
 ): Promise<string | null> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (process.env.AI_PROVIDER !== 'openai' || !apiKey) return null;
@@ -58,7 +66,7 @@ async function llmReply(
         temperature: 0.7,
         max_tokens: 500,
         messages: [
-          { role: 'system', content: safetySystemPrompt(context, subject) },
+          { role: 'system', content: safetySystemPrompt(context, subject, curriculum) },
           ...messages.slice(-MAX_HISTORY).map((message) => ({
             role: message.role === 'mentor' ? 'assistant' : 'user',
             content: stripMarkers(message.content),
@@ -98,7 +106,17 @@ export async function mentorReply(
   messages: ChatMessage[],
   subject: string,
 ): Promise<string> {
-  const context = await buildContext(userId);
-  const fromLlm = await llmReply(messages, subject, context);
-  return fromLlm ?? adaptiveReply(messages, subject, context);
+  const latestQuestion = [...messages].reverse().find((m) => m.role === 'student')?.content ?? '';
+  const [context, passages] = await Promise.all([
+    buildContext(userId),
+    retrievePassages(latestQuestion, subject),
+  ]);
+  const curriculum = formatContext(passages);
+
+  const fromLlm = await llmReply(messages, subject, context, curriculum);
+  if (fromLlm) return fromLlm;
+
+  // Adaptive fallback: its curated answers come first; if it has nothing
+  // specific, the retrieved syllabus passage grounds the reply.
+  return adaptiveReply(messages, subject, context, formatStudentAnswer(passages));
 }

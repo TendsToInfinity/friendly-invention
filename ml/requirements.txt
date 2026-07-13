@@ -1,0 +1,5 @@
+# Curriculum RAG ingestion pipeline (ml/build_index.py).
+# openai is only needed to compute embeddings for semantic search; without it
+# the builder still produces a valid keyword-only index.
+openai>=1.40.0
+python-dotenv>=1.0.0

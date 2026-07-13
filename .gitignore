@@ -8,3 +8,6 @@ playwright-report
 .DS_Store
 lib/generated
 .env
+ml/.venv
+ml/__pycache__
+**/__pycache__
